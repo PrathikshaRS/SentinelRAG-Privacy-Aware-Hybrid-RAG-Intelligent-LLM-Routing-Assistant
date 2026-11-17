@@ -12,14 +12,16 @@ class User(Base):
 
 class Document(Base):
     __tablename__ = "documents"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     original_name = Column(String(255), nullable=False)
-    internal_uuid = Column(String(36), unique=True, nullable=False)  # UUID stored as string
+    internal_uuid = Column(String(36), unique=True, nullable=False)
     subject = Column(String(100), nullable=False)
-    file_path = Column(String(500), nullable=False)  # actual path on disk
-    status = Column(String(20), default="pending")   # pending, processing, completed, failed
+    file_path = Column(String(500), nullable=False)
+    status = Column(String(20), default="pending")
+    file_hash = Column(String(64), nullable=True, index=True)
+    error = Column(String(500), nullable=True)
     uploaded_at = Column(DateTime(timezone=True), server_default=func.now())
     processed_at = Column(DateTime(timezone=True), nullable=True)
 
