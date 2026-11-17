@@ -1,0 +1,195 @@
+[
+  {
+    "id": 1,
+    "question": "Explain the four general means of authenticating a user's identity with examples.",
+    "pages": [
+      2,
+      3
+    ],
+    "type": "exact",
+    "source": "user"
+  },
+  {
+    "id": 2,
+    "question": "What kinds of evidence can a person offer to prove who they are, other than a secret they remember?",
+    "pages": [
+      2,
+      3
+    ],
+    "type": "paraphrase",
+    "source": "assistant"
+  },
+  {
+    "id": 3,
+    "question": "What are replay attacks? Explain their different types.",
+    "pages": [
+      3,
+      4
+    ],
+    "type": "exact",
+    "source": "user"
+  },
+  {
+    "id": 4,
+    "question": "Explain the possible countermeasures against replay attacks.",
+    "pages": [
+      4
+    ],
+    "type": "exact",
+    "source": "user"
+  },
+  {
+    "id": 5,
+    "question": "What is the trade-off in choosing how long a sign-in pass issued by a central login server remains valid?",
+    "pages": [
+      7,
+      8
+    ],
+    "type": "paraphrase",
+    "source": "assistant"
+  },
+  {
+    "id": 6,
+    "question": "How was the original two-party key-exchange scheme repaired against reuse of a compromised old key, and what new dependency did the repair introduce?",
+    "pages": [
+      5,
+      6
+    ],
+    "type": "paraphrase",
+    "source": "assistant"
+  },
+  {
+    "id": 7,
+    "question": "What are the requirements of Kerberos authentication? Explain each requirement.",
+    "pages": [
+      7
+    ],
+    "type": "exact",
+    "source": "user"
+  },
+  {
+    "id": 8,
+    "question": "What is a Kerberos realm? Explain the requirements for establishing a full-service Kerberos environment.",
+    "pages": [
+      11,
+      12
+    ],
+    "type": "exact",
+    "source": "user"
+  },
+  {
+    "id": 9,
+    "question": "Compare Kerberos Versions 4 and 5 based on their environmental shortcomings.",
+    "pages": [
+      16
+    ],
+    "type": "exact",
+    "source": "user"
+  },
+  {
+    "id": 10,
+    "question": "Explain the technical deficiencies of Kerberos Version 4.",
+    "pages": [
+      17
+    ],
+    "type": "exact",
+    "source": "user"
+  },
+  {
+    "id": 11,
+    "question": "Explain the major Web security threats.",
+    "pages": [
+      19,
+      20
+    ],
+    "type": "exact",
+    "source": "user"
+  },
+  {
+    "id": 12,
+    "question": "How do the layers of the web's main encrypted transport protocol fit together, and how does a session differ from a connection?",
+    "pages": [
+      21,
+      22
+    ],
+    "type": "paraphrase",
+    "source": "assistant"
+  },
+  {
+    "id": 13,
+    "question": "Explain the different categories of SSL/TLS attacks.",
+    "pages": [
+      25
+    ],
+    "type": "exact",
+    "source": "user"
+  },
+  {
+    "id": 14,
+    "question": "Explain the enhancements introduced in TLS Version 1.3.",
+    "pages": [
+      25
+    ],
+    "type": "exact",
+    "source": "user"
+  },
+  {
+    "id": 15,
+    "question": "Explain the five operational functions of Pretty Good Privacy (PGP).",
+    "pages": [
+      27,
+      28,
+      29,
+      30
+    ],
+    "type": "exact",
+    "source": "user"
+  },
+  {
+    "id": 16,
+    "question": "Explain the limitations of SMTP that led to the development of MIME.",
+    "pages": [
+      33
+    ],
+    "type": "exact",
+    "source": "user"
+  },
+  {
+    "id": 17,
+    "question": "Explain the five MIME header fields and their functions.",
+    "pages": [
+      33,
+      34
+    ],
+    "type": "exact",
+    "source": "user"
+  },
+  {
+    "id": 18,
+    "question": "Which changes made the newest version of the web's encrypted transport protocol faster to set up and less exposed to old weaknesses?",
+    "pages": [
+      25
+    ],
+    "type": "paraphrase",
+    "source": "assistant"
+  },
+  {
+    "id": 19,
+    "question": "Explain the MIME transfer encodings: quoted-printable and base64.",
+    "pages": [
+      37,
+      38
+    ],
+    "type": "exact",
+    "source": "user"
+  },
+  {
+    "id": 20,
+    "question": "What extra guarantees can secure email provide beyond signing and encryption, such as proof of receipt and delivery to many readers?",
+    "pages": [
+      43
+    ],
+    "type": "paraphrase",
+    "source": "assistant"
+  }
+]
