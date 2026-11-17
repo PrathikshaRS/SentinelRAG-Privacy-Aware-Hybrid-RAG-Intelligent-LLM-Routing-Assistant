@@ -1,0 +1,8 @@
+venv/
+.env
+chroma_db/
+documents/
+__pycache__/
+*.pyc
+*.log
+fix_collections.py
