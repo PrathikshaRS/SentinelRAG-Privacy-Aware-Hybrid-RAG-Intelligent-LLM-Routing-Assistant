@@ -1,0 +1,96 @@
+[
+  {
+    "id": 21,
+    "question": "When parties need to verify one another before sharing a temporary secret, what two protections must the exchange provide?",
+    "pages": [
+      3
+    ],
+    "type": "paraphrase",
+    "source": "user"
+  },
+  {
+    "id": 22,
+    "question": "How do two parties that each share a long-term key with a common server end up with a fresh shared key?",
+    "pages": [
+      4,
+      5,
+      6
+    ],
+    "type": "paraphrase",
+    "source": "user"
+  },
+  {
+    "id": 23,
+    "question": "In this authentication process, which piece of proof can be presented again, and which must be newly created for each use?",
+    "pages": [
+      9
+    ],
+    "type": "paraphrase",
+    "source": "user"
+  },
+  {
+    "id": 24,
+    "question": "What network conditions can cause an old message to be accepted as current in a time-based authentication scheme?",
+    "pages": [
+      6
+    ],
+    "type": "paraphrase",
+    "source": "user"
+  },
+  {
+    "id": 25,
+    "question": "Which details are maintained for an entire period of communication, and which are specific to an individual connection?",
+    "pages": [
+      22
+    ],
+    "type": "paraphrase",
+    "source": "user"
+  },
+  {
+    "id": 26,
+    "question": "Explain the sequence of operations performed by the TLS Record Protocol.",
+    "pages": [
+      22
+    ],
+    "type": "exact",
+    "source": "user"
+  },
+  {
+    "id": 27,
+    "question": "Why does PGP generate a digital signature before compression and perform encryption after compression?",
+    "pages": [
+      29,
+      30
+    ],
+    "type": "exact",
+    "source": "user"
+  },
+  {
+    "id": 28,
+    "question": "After encryption, how does the open-source e-mail privacy package turn raw bytes into printable text, and how does it cope with mail size limits?",
+    "pages": [
+      30
+    ],
+    "type": "paraphrase",
+    "source": "assistant",
+    "original_question": "How is encrypted message data converted into a form suitable for email transmission, and how are messages that exceed size limits delivered?"
+  },
+  {
+    "id": 29,
+    "question": "Explain the structure of an electronic mail message as defined by RFC 822.",
+    "pages": [
+      32
+    ],
+    "type": "exact",
+    "source": "user"
+  },
+  {
+    "id": 30,
+    "question": "Explain the key-management responsibilities of a user agent when using digital certificates for secure email.",
+    "pages": [
+      42
+    ],
+    "type": "exact",
+    "source": "user"
+  }
+]

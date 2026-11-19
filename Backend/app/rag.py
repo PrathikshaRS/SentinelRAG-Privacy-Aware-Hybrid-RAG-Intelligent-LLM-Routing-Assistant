@@ -3,6 +3,7 @@ import re
 from collections import Counter
 from typing import List, Optional
 
+import numpy as np
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -148,21 +149,46 @@ def retrieve_chunks(
     top_k: int = 3,
     mode: str = "hybrid",
     filter_meta: Optional[dict] = None,
+    fusion: str = "child",
+    pool_size: Optional[int] = None,
+    dense_backend: str = "exact",
 ) -> list:
     """
     mode: "hybrid" (dense + BM25 fused with RRF), "dense", or "bm25".
+    fusion: "child" (default) fuses rank lists by child-chunk id, then de-duplicates parents.
+            "parent" maps every child to its parent first, so votes for the same parent combine.
+    pool_size: candidates taken from each method. Default grows with top_k; pass a fixed
+            number to make results at different top_k comparable.
+    dense_backend: "exact" ranks every chunk by squared L2 distance in numpy (deterministic; fine for
+            thousands of chunks, since BM25 already reads the whole collection). "ann" uses Chroma's
+            approximate search, which returned different neighbours across restarts on this data.
     Returns dicts: id, score, child, parent, metadata. Parent texts are de-duplicated.
     """
     if mode not in MODES:
         raise ValueError(f"mode must be one of {sorted(MODES)}")
+    if fusion not in ("child", "parent"):
+        raise ValueError("fusion must be 'child' or 'parent'")
+    if dense_backend not in ("exact", "ann"):
+        raise ValueError("dense_backend must be 'exact' or 'ann'")
 
-    pool = max(CANDIDATES, top_k * 5)
+    pool = pool_size or max(CANDIDATES, top_k * 5)
 
     collection = chroma_client.get_or_create_collection(collection_name(username, subject))
-    data = collection.get(include=["documents", "metadatas"])
+    need_vecs = mode in ("hybrid", "dense") and dense_backend == "exact"
+    data = collection.get(include=["documents", "metadatas"] + (["embeddings"] if need_vecs else []))
     ids, texts, metas = data["ids"], data["documents"], data["metadatas"]
+    vecs = data.get("embeddings") if need_vecs else None
     if not ids:
         return []
+
+    # Deterministic corpus order: results must not depend on Chroma's row order
+    # (BM25 scores and fused RRF scores tie often, and ties were broken by that order).
+    order = sorted(range(len(ids)), key=lambda i: ids[i])
+    ids = [ids[i] for i in order]
+    texts = [texts[i] for i in order]
+    metas = [metas[i] for i in order]
+    if vecs is not None:
+        vecs = np.asarray(vecs, dtype=np.float64)[order]
 
     # Only simple equality filters on strings. The collection is already per user+subject.
     filters = {
@@ -180,28 +206,67 @@ def retrieve_chunks(
     ids = [ids[i] for i in keep]
     texts = [texts[i] for i in keep]
     metas = [metas[i] for i in keep]
+    if vecs is not None:
+        vecs = vecs[keep]
     lookup = {cid: (txt, meta) for cid, txt, meta in zip(ids, texts, metas)}
 
     ranked_lists = []
 
     # ---- Dense (semantic) ----
     if mode in ("hybrid", "dense"):
-        res = collection.query(
-            query_embeddings=[embeddings.embed_query(query)],
-            n_results=min(pool, len(ids)),
-            where=_build_where(filters),
-            include=["documents"],
-        )
-        ranked_lists.append(res["ids"][0])
+        if dense_backend == "exact":
+            qv = np.asarray(embeddings.embed_query(query), dtype=np.float64)
+            dist = ((vecs - qv) ** 2).sum(axis=1)          # squared L2, Chroma's default space
+            dense_order = sorted(
+                range(len(ids)), key=lambda i: (round(float(dist[i]), 12), ids[i])
+            )[:pool]
+            ranked_lists.append([ids[i] for i in dense_order])
+        else:
+            res = collection.query(
+                query_embeddings=[embeddings.embed_query(query)],
+                n_results=min(pool, len(ids)),
+                where=_build_where(filters),
+                include=["documents"],
+            )
+            ranked_lists.append(res["ids"][0])
 
     # ---- BM25 (keyword) over the same filtered chunks ----
     if mode in ("hybrid", "bm25"):
         bm25 = BM25Okapi([_tokenize(t) or ["_"] for t in texts])
         scores = bm25.get_scores(_tokenize(query))
-        order = sorted(range(len(ids)), key=lambda i: scores[i], reverse=True)[:pool]
+        order = sorted(range(len(ids)), key=lambda i: (-scores[i], ids[i]))[:pool]
         ranked_lists.append([ids[i] for i in order if scores[i] > 0])
 
-    # ---- Reciprocal Rank Fusion ----
+    # ---- Parent-level Reciprocal Rank Fusion (optional) ----
+    if fusion == "parent":
+        def parent_of(cid):
+            child_text, meta = lookup[cid]
+            return meta.get("parent_content") or child_text
+
+        fused_p, rep = {}, {}
+        for ranked in ranked_lists:
+            seen_keys, rank = set(), 0
+            for cid in ranked:
+                pk = parent_of(cid)
+                if pk in seen_keys:
+                    continue
+                seen_keys.add(pk)
+                fused_p[pk] = fused_p.get(pk, 0.0) + 1.0 / (RRF_K + rank + 1)
+                rep.setdefault(pk, cid)
+                rank += 1
+        ordered = sorted(fused_p, key=lambda pk: (-round(fused_p[pk], 12), rep[pk]))[:top_k]
+        return [
+            {
+                "id": rep[pk],
+                "score": fused_p[pk],
+                "child": lookup[rep[pk]][0],
+                "parent": pk,
+                "metadata": lookup[rep[pk]][1],
+            }
+            for pk in ordered
+        ]
+
+    # ---- Reciprocal Rank Fusion (child level) ----
     fused = {}
     for ranked in ranked_lists:
         for rank, cid in enumerate(ranked):
@@ -209,7 +274,7 @@ def retrieve_chunks(
 
     # ---- Map to parent chunks, de-duplicated ----
     results, seen = [], set()
-    for cid in sorted(fused, key=fused.get, reverse=True):
+    for cid in sorted(fused, key=lambda c: (-round(fused[c], 12), c)):
         child_text, meta = lookup[cid]
         parent = meta.get("parent_content") or child_text
         if parent in seen:
